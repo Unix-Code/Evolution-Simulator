@@ -18,12 +18,19 @@ def convert_polar_to_cartesian(r, theta):
     return (r * cos(theta)), (r * sin(theta))
 
 
-def average(nums):
+def average(*nums):
     return reduce(lambda a, b: a + b, nums) / len(nums)
 
 
 def max_by(objs, max_func):
     if objs:
         return reduce(lambda a, b: a if max_func(a) >= max_func(b) else b, objs, objs[0])
+    else:
+        return None
+
+
+def min_by(objs, min_func):
+    if objs:
+        return reduce(lambda a, b: a if min_func(a) <= min_func(b) else b, objs, objs[0])
     else:
         return None

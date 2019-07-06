@@ -1,3 +1,5 @@
+import uuid
+
 import pygame.gfxdraw
 
 from bounds import ScreenBounds
@@ -5,16 +7,16 @@ from vector import Vector
 
 
 class Entity(pygame.sprite.Sprite):
-    def __init__(self, init_pos, size, image, init_vel=Vector.null()):
+    def __init__(self, init_pos, size, image, init_vel=Vector.null(), max_force=0.1):
         super().__init__()
-        # self.genes = genes
+        self.id = uuid.uuid4()
         self.image = image
         self.radius = int(size / 2)
         self.rect = pygame.Rect(init_pos.x - self.radius, init_pos.y - self.radius, size, size)
         self.position = init_pos
         self.velocity = init_vel
         self.acceleration = Vector.null()
-        self.max_force = 0.1
+        self.max_force = max_force
         self.age = 0
 
     def update(self, screen_bounds, **kwargs):
@@ -28,7 +30,8 @@ class Entity(pygame.sprite.Sprite):
         self.acceleration = self.acceleration.add(force)
 
     def _calc_movement(self):
-        self.velocity = self.velocity.add(self.acceleration).limit()
+        self.velocity = self.velocity.add(self.acceleration)
+        self.velocity = self.velocity.limit(self.genome.get("max_speed")) if (self.genome or {}).get("max_speed") else self.velocity.limit()
         self.acceleration = Vector.null()
         self.position = self.position.add(self.velocity)
 

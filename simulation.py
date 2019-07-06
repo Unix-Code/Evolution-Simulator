@@ -6,6 +6,7 @@ from pygame.sprite import Group as SpriteGroup
 
 from bounds import ScreenBounds
 from food import Food
+from genome import Genome
 from organism import Organism
 from vector import Vector
 
@@ -31,20 +32,21 @@ class Simulation:
 
     def init_organisms(self):
         screen_width, screen_height = self.screen_bounds.bounds()
-        for x in range(0, 20):
+        for x in range(0, 10):
             rand_pos = Vector(randint(100, screen_width - 100), randint(100, screen_height - 100))
             rand_vel = Vector(randint(2, Vector.MAX_SPEED), randint(2, Vector.MAX_SPEED))
             rand_organism = Organism(rand_pos, rand_vel, 30, (randint(0, 255), randint(0, 255), randint(0, 255)))
             self.organisms.add(rand_organism)
 
     def init_food(self):
-        for x in range(0, 75):
+        for x in range(0, 1):
             self.spawn_food()
 
     def spawn_food(self):
         screen_width, screen_height = self.screen_bounds.bounds()
         rand_pos = Vector(int(random.uniform(100, screen_width - 100)), int(random.uniform(100, screen_height - 100)))
-        rand_food = Food(rand_pos, randint(20, 30))
+        rand_poison = random.choices([True, False], [1, 5]).pop()
+        rand_food = Food(rand_pos, 30, rand_poison)
         self.food.add(rand_food)
 
     def start(self):
@@ -57,11 +59,13 @@ class Simulation:
         self.screen.fill(self.bg_color)
         self.food.draw(self.screen)
         for x in self.organisms:
-            surf = pygame.Surface((x.outer_vision_rad * 2 + 1, x.outer_vision_rad * 2 + 1), pygame.SRCALPHA)
-            pygame.gfxdraw.aacircle(surf, x.outer_vision_rad, x.outer_vision_rad, x.outer_vision_rad, (255, 0, 0))
-            pygame.gfxdraw.aacircle(surf, x.outer_vision_rad, x.outer_vision_rad, x.inner_vision_rad, (0, 0, 255))
-            pygame.draw.rect(surf, (255, 0, 0), pygame.Rect(x.outer_vision_rad - x.rect.width / 2, x.outer_vision_rad - x.rect.height / 2, x.rect.width, x.rect.height), 1)
-            self.screen.blit(surf, (x.rect.centerx - x.outer_vision_rad, x.rect.centery - x.outer_vision_rad))
+            outer_vision_rad = x.genome.get("outer_vision_rad")
+            inner_vision_rad = x.genome.get("inner_vision_rad")
+            surf = pygame.Surface((outer_vision_rad * 2 + 1, outer_vision_rad * 2 + 1), pygame.SRCALPHA)
+            pygame.gfxdraw.aacircle(surf, outer_vision_rad, outer_vision_rad, outer_vision_rad, (255, 0, 0))
+            pygame.gfxdraw.aacircle(surf, outer_vision_rad, outer_vision_rad, inner_vision_rad, (0, 0, 255))
+            pygame.draw.rect(surf, (255, 0, 0), pygame.Rect(outer_vision_rad - x.rect.width / 2, outer_vision_rad - x.rect.height / 2, x.rect.width, x.rect.height), 1)
+            self.screen.blit(surf, (x.rect.centerx - outer_vision_rad, x.rect.centery - outer_vision_rad))
         self.organisms.draw(self.screen)
         pygame.display.flip()
 
